@@ -10,6 +10,13 @@ const MongoClient = require('mongodb').MongoClient;
 
 const multer = require('multer');
 
+const storedConfig = require('./config.js');
+const config = {
+  host: storedConfig.storedConfig.host,
+  user: storedConfig.storedConfig.user,
+  password: storedConfig.storedConfig.password
+}
+
 let storage = multer.diskStorage(
   {
     destination: './public/uploads/',
@@ -21,14 +28,14 @@ let storage = multer.diskStorage(
 
 let upload = multer({storage: storage});
 
-const user = 'bigboy';
-const pw = 'bigboys.nyc2019';
+const user = config.user;
+const pw = config.password;
 
 var db;
 
 app.use(bodyParser());
 
-MongoClient.connect('MONGO', (err, client) => {
+MongoClient.connect(config.host, (err, client) => {
   if (err) return console.log(err)
     db = client.db('taggr')
   app.listen(port, () => {
