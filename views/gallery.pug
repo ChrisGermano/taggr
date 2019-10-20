@@ -1,0 +1,15 @@
+extends layout
+
+block layout-content
+  div.col-md-8.offset-md-2.col-12s
+    h1.Banner
+    div.Message
+      div.Title
+        h1= title
+    div
+      ul
+        each val, index in images
+          li
+            img.galleryImage(src="/uploads/"+val alt="Image")
+        else
+          li Nothing here, bro

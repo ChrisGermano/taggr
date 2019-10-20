@@ -1,0 +1,26 @@
+extends layout
+
+block layout-content
+  div.col-md-8.offset-md-2.col-12
+    h1 Taggr
+    h3 What's Your Tag?
+    br
+    h3 Top Tags:
+    ul
+      each val in topTags
+        li=val
+      else
+        li There are no top tags! Why don't you make some?
+    br
+    if isAuthenticated
+      form(method='POST' enctype='multipart/form-data' action='/testpost')
+        div.form-group
+          label(for='hashtag') Hashtag:
+          input#hashtag.form-control(type='text', placeholder='Your hashtag' name='hashtag')
+          br
+          label(for='image') Image:
+          input#image.form-control(type='file', placeholder='Your image' name='image' accept='image/*')
+        button.btn.btn-primary(type='submit') Sign up
+    else
+      a(href="/login")
+        p Login to Tag!

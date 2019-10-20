@@ -1,0 +1,11 @@
+ul {
+  list-style: none;
+}
+
+.galleryImage {
+  border: 2px solid black;
+  display: block;
+  margin: 15px auto;
+  max-height: 150px;
+  width: auto;
+}
