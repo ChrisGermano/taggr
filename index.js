@@ -1,16 +1,18 @@
+'use strict';
+
 const path = require("path");
 const express = require("express");
-
 const app = express();
 const port = process.env.PORT || "8000";
-
 const bodyParser = require("body-parser");
-
 const MongoClient = require('mongodb').MongoClient;
-
 const multer = require('multer');
+const sha512 = require('js-sha512');
+
+//******************************************************************************
 
 const storedConfig = require('./config.js');
+
 const config = {
   host: storedConfig.storedConfig.host,
   user: storedConfig.storedConfig.user,
@@ -28,12 +30,17 @@ let storage = multer.diskStorage(
 
 let upload = multer({storage: storage});
 
+const salt = config.salt;
 const user = config.user;
 const pw = config.password;
 
 var db;
 
-app.use(bodyParser());
+//******************************************************************************
+
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
 
 MongoClient.connect(config.host, (err, client) => {
   if (err) return console.log(err)
@@ -47,9 +54,25 @@ app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "pug");
 
 app.use(express.static(path.join(__dirname, "public")));
-//app.use(express.static("uploads"));
+
+//******************************************************************************
+
+var genSalt = function() {
+    return "123abc";
+};
+
+var getSha = function(password){
+    let tmpSalt = genSalt();
+    return {
+        salt: tmpSalt,
+        passwordHash: sha512.hmac(tmpSalt, password)
+    };
+};
+
+//******************************************************************************
 
 app.get("/", (req, res) => {
+
   db.collection('tags').find().sort( {count: -1}).limit(3).toArray(function(mErr, mRes) {
     if (mErr) throw mErr;
     let tags = [];
@@ -57,8 +80,7 @@ app.get("/", (req, res) => {
       tags.push(e.tag + ": " + e.count);
     })
 
-    console.log(tags);
-    res.render("index", { title: "Home", topTags: tags, isAuthenticated: true });
+    res.render("index", { title: "Home", topTags: tags });
   })
 });
 
@@ -67,7 +89,53 @@ app.get("/user", (req, res) => {
 });
 
 app.get("/login", (req, res) => {
-  res.redirect("/");
+  res.render("login");
+})
+
+app.post("/login", (req, res) => {
+
+  if (req.body.email === "" || req.body.password === "") {
+    res.redirect("/");
+  }
+
+  let hashedPass = getSha(req.body.password);
+
+  db.collection('users').find({ $or : [ { email : req.body.email }, { username : req.body.email } ], password : hashedPass.passwordHash}).limit(1).toArray(function(mErr, mRes) {
+    console.log(mRes);
+    if (mRes.length != 0) {
+      res.redirect("/user");
+    } else {
+      res.redirect("/login");
+    }
+  })
+
+})
+
+app.get("/signup", (req, res) => {
+  res.render("signup");
+})
+
+app.post("/signup", (req, res) => {
+
+  if (req.body.username === "" || req.body.email === "" || req.body.password === "") {
+    res.redirect("/signup");
+  }
+
+  let hashedPass = getSha(req.body.password);
+
+  let newUser = {
+    username: req.body.username,
+    email: req.body.email,
+    password: hashedPass.passwordHash,
+    salt: hashedPass.salt
+  }
+
+  console.log(newUser);
+
+  db.collection('users').insertOne(newUser, (err, result) => {
+    if (err) return console.log(err);
+    res.redirect("/");
+  })
 })
 
 app.get("/tag/:hashtag", (req, res) => {

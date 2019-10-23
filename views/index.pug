@@ -20,7 +20,10 @@ block layout-content
           br
           label(for='image') Image:
           input#image.form-control(type='file', placeholder='Your image' name='image' accept='image/*')
-        button.btn.btn-primary(type='submit') Sign up
+        button.btn.btn-primary(type='submit') Submit
     else
       a(href="/login")
         p Login to Tag!
+      br
+      a(href="/signup")
+        p Signup to Tag!

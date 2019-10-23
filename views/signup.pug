@@ -3,7 +3,8 @@ extends layout
 block layout-content
   link(rel="stylesheet" href="/loginStyles.css")
   div.col-md-8.offset-md-2.col-12
-    form(method='POST' action='/login')
-      input#login.fadeIn.second.form-control(type='text', placeholder='Username or Email' name='email')
+    form(method='POST' action='/signup')
+      input#username.fadeIn.second.form-control(type='text', placeholder='Your username' name='username')
+      input#login.fadeIn.second.form-control(type='email', placeholder='Your email' name='email')
       input#password.fadeIn.third.form-control(type='password', placeholder='Your password' name='password')
       input.fadeIn.fourth.form-control(type='submit' value='Sign up')
